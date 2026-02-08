@@ -1,0 +1,11 @@
+# Ignore sensitive database credentials
+.env
+
+# Ignore database backups and large dumps
+*.sql.gz
+*.bak
+*.dump
+
+# Ignore logs and temp files
+*.log
+.DS_Store
