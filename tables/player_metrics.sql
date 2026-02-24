@@ -1,6 +1,9 @@
+DROP TABLE IF EXISTS player_metrics CASCADE;
+
 CREATE TABLE player_metrics (
     metric_id SERIAL PRIMARY KEY,
-    game_id INT REFERENCES games(game_id) ON DELETE CASCADE,
+    -- This MUST be appid to match the games table
+    appid INT REFERENCES games(appid) ON DELETE CASCADE, 
     current_players INT NOT NULL,
     peak_24h INT,
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
