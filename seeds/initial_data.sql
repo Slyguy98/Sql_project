@@ -1,24 +1,18 @@
--- Active: 1770524401552@@localhost@5432@postgres
--- Step 1: Clean the slate (Optional: prevents duplicate errors if you run this twice)
-TRUNCATE player_metrics, games, genres RESTART IDENTITY CASCADE;
+-- Step 1: Bulk Load the 27k games from the CSV
+-- Note: This assumes steam.csv is in your seeds folder
+TRUNCATE games, genres, game_genres, player_metrics RESTART IDENTITY CASCADE;
 
--- Step 2: Insert Genres first (The "Parents")
-INSERT INTO genres (genre_name, description) VALUES 
-('FPS', 'First-Person Shooters focusing on gunplay.'),
-('MOBA', 'Multiplayer Online Battle Arenas.'),
-('RPG', 'Role-Playing Games with deep stories.'),
-('Battle Royale', 'Last man standing survival games.');
+\copy games FROM '/home/jamil/sql_project/seeds/steam.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',');
 
--- Step 3: Insert Games (The "Children" - linking to genres)
-INSERT INTO games (title, game_type, genre_id) VALUES 
-('Valorant', 'Multiplayer', (SELECT genre_id FROM genres WHERE genre_name = 'FPS')),
-('League of Legends', 'Multiplayer', (SELECT genre_id FROM genres WHERE genre_name = 'MOBA')),
-('Elden Ring', 'Single Player', (SELECT genre_id FROM genres WHERE genre_name = 'RPG')),
-('Fortnite', 'Multiplayer', (SELECT genre_id FROM genres WHERE genre_name = 'Battle Royale'));
+-- Step 2: Automatically Populate the Relational Tables
+-- This extracts the unique genres and builds the Many-to-Many links
+INSERT INTO genres (genre_name) 
+SELECT DISTINCT unnest(string_to_array(genres, ';')) FROM games 
+ON CONFLICT DO NOTHING;
 
--- Step 4: Insert Metrics (The "Grandchildren" - linking to games)
-INSERT INTO player_metrics (game_id, current_players, peak_24h) VALUES 
-((SELECT game_id FROM games WHERE title = 'Valorant'), 750000, 1100000),
-((SELECT game_id FROM games WHERE title = 'League of Legends'), 2100000, 3800000),
-((SELECT game_id FROM games WHERE title = 'Elden Ring'), 62000, 150000),
-((SELECT game_id FROM games WHERE title = 'Fortnite'), 1800000, 4000000);
+INSERT INTO game_genres (appid, genre_id)
+SELECT g.appid, gn.genre_id
+FROM games g
+CROSS JOIN LATERAL unnest(string_to_array(g.genres, ';')) AS s(name)
+JOIN genres gn ON gn.genre_name = s.name 
+ON CONFLICT DO NOTHING;
