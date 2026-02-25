@@ -34,7 +34,7 @@ with tab1:
     query = """
         SELECT title, developer, positive_ratings, owners, price 
         FROM games 
-        WHERE title ILIKE %sgit add scripts/dashboard.py 
+        WHERE title ILIKE %s
         AND price <= %s 
         ORDER BY positive_ratings DESC
     """
