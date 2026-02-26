@@ -9,8 +9,8 @@ CREATE TABLE games (
     publisher TEXT,
     platforms TEXT,
     required_age INT,
-    categories TEXT, -- We keep these for the initial import
-    genres TEXT,     -- We keep these for the initial import
+    categories TEXT,
+    genres TEXT,     
     steamspy_tags TEXT,
     achievements INT,
     positive_ratings INT,

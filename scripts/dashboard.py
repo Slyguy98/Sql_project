@@ -18,7 +18,7 @@ def run_query(query, params=None):
 # --- SIDEBAR FILTERS ---
 st.sidebar.header("🔍 Global Filters")
 search_term = st.sidebar.text_input("Search Game Title", "")
-price_limit = st.sidebar.slider("Max Price ($)", 0, 100, 60)
+price_limit = st.sidebar.slider("Max Price ($)", 0, 100, 50)
 
 # --- MAIN UI ---
 st.title("🎮 Steam Intelligence Dashboard")
