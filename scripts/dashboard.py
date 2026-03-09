@@ -89,7 +89,7 @@ with tab4:
     
     fig_bar = px.bar(
         top_10_approval, 
-        x='approval_rating', 
+        x='approval_ratin',
         y='genre', 
         orientation='h',
         title="Top 10 Rated Genres (Min. 50 Games)",
