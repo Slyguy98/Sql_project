@@ -68,19 +68,59 @@ with tab2:
     st.plotly_chart(fig_price, use_container_width=True)
 
 with tab3:
-    st.subheader("Highest Playtime on Average")
-    query = "SELECT title, developer, ROUND(average_playtime / 60.0, 1) as avg_hours FROM games WHERE average_playtime > 0 ORDER BY average_playtime DESC LIMIT 15"
-    sust_df = run_query(query)
-    fig_sust = px.bar(sust_df, x='avg_hours', y='title', orientation='h', title="Top Games by Average Hours Played")
-    fig_sust.update_traces(
-        hovertemplate="<b>%{y}</b><br>AVG: %{x}Hr<extra></extra>"
+    st.subheader("🏢 Publisher Impact & Sustainability")
+    st.markdown("Analyzing market outcomes: How much **time** and **money** do these publishers actually command?")
+
+    # 1. Fetch data from the comprehensive View
+    df_pub = run_query("SELECT * FROM publisher_outcomes LIMIT 100")
+
+    # --- Summary Metrics ---
+    top_pub = df_pub.iloc[0]
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Market Leader", top_pub['publisher'])
+    m2.metric("Est. Top Revenue", f"${top_pub['total_revenue']:,.0f}")
+    m3.metric("Avg. Engagement", f"{top_pub['engagement_score']} Hrs")
+
+    # --- Visual Analysis Row ---
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # Treemap: Market Dominance
+        fig_whale = px.treemap(
+            df_pub, 
+            path=['market_tier', 'publisher'], 
+            values='total_revenue',
+            color='satisfaction_score',
+            color_continuous_scale='RdYlGn',
+            title="Revenue Dominance by Tier & Sentiment"
+        )
+        st.plotly_chart(fig_whale, use_container_width=True)
+
+    with col2:
+        # Scatter: Stickiness Quadrant
+        fig_stickiness = px.scatter(
+            df_pub, x="satisfaction_score", y="engagement_score",
+            size="total_owners", color="market_tier", hover_name="publisher",
+            title="Quality vs. Engagement (Stickiness)",
+            labels={"satisfaction_score": "Approval %", "engagement_score": "Avg Hrs Played"}
+        )
+        # Add Reference Lines for Market Averages
+        fig_stickiness.add_hline(y=df_pub['engagement_score'].mean(), line_dash="dot")
+        fig_stickiness.add_vline(x=df_pub['satisfaction_score'].mean(), line_dash="dot")
+        st.plotly_chart(fig_stickiness, use_container_width=True)
+
+    # --- Detailed Data Table ---
+    st.markdown("### 📊 Complete Publisher Performance Index")
+    st.dataframe(
+        df_pub.style.background_gradient(subset=['total_revenue'], cmap='Greens')
+                   .background_gradient(subset=['satisfaction_score'], cmap='RdYlGn'),
+        use_container_width=True
     )
-    st.plotly_chart(fig_sust, use_container_width=True)
 
 with tab4:
     st.subheader("Genre Dominance & Community Approval")
     
-    # 1. Pull data from our optimized View
+    # 1. Pull data from optimized View
     query = "SELECT genre, total_games, approval_rating FROM genre_analysis"
     genre_df = run_query(query)
     
